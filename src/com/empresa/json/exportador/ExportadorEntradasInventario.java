@@ -3,9 +3,10 @@ package com.empresa.json.exportador;
 import com.empresa.compras.detallecompra.DetalleCompra;
 import com.empresa.json.dto.EntradaInventarioDTO;
 
-import java.io.FileWriter;
 import java.io.IOException;
-import java.time.LocalDate;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,15 +22,14 @@ import java.util.List;
  */
 public class ExportadorEntradasInventario {
 
-    private static final String RUTA_SALIDA = "exportaciones/entradas_inventario.json";
+    private static final Path RUTA_SALIDA = Path.of("exportaciones", "entradas_inventario.json");
 
-    public boolean exportar(List<DetalleCompra> detalles, int idCompra) {
+    public boolean exportar(List<DetalleCompra> detalles, int idCompra, String fechaCompra) {
         if (detalles == null || detalles.isEmpty()) {
             System.out.println("No hay detalles para exportar en la compra " + idCompra);
             return false;
         }
 
-        String fechaHoy = LocalDate.now().toString();
         List<EntradaInventarioDTO> entradas = new ArrayList<>();
         for (DetalleCompra d : detalles) {
             entradas.add(new EntradaInventarioDTO(
@@ -37,14 +37,15 @@ public class ExportadorEntradasInventario {
                     d.getIdProducto(),
                     d.getCantidad(),
                     d.getCostoUnitario(),
-                    fechaHoy
+                    fechaCompra
             ));
         }
 
         String json = construirJson(entradas);
 
-        try (FileWriter writer = new FileWriter(RUTA_SALIDA)) {
-            writer.write(json);
+        try {
+            Files.createDirectories(RUTA_SALIDA.getParent());
+            Files.writeString(RUTA_SALIDA, json, StandardCharsets.UTF_8);
             System.out.println("Archivo generado: " + RUTA_SALIDA);
             return true;
         } catch (IOException e) {

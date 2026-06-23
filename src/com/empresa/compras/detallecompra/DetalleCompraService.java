@@ -69,7 +69,7 @@ public class DetalleCompraService {
         }
 
         List<DetalleCompra> detalles = detalleCompraRepository.obtenerPorCompra(idCompra);
-        boolean exito = exportador.exportar(detalles, idCompra);
+        boolean exito = exportador.exportar(detalles, idCompra, compra.getFecha());
 
         return exito ? null : "Error: no se pudo generar el archivo JSON.";
     }
