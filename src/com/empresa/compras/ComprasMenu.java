@@ -6,6 +6,7 @@ import com.empresa.compras.detallecompra.DetalleCompra;
 import com.empresa.compras.detallecompra.DetalleCompraController;
 import com.empresa.compras.proveedor.Proveedor;
 import com.empresa.compras.proveedor.ProveedorController;
+import com.empresa.json.importador.ImportacionProductosController;
 import com.empresa.persistencia.PersistenciaException;
 
 import java.util.List;
@@ -30,6 +31,8 @@ public class ComprasMenu {
     private final ProveedorController proveedorController = new ProveedorController();
     private final CompraController compraController = new CompraController();
     private final DetalleCompraController detalleCompraController = new DetalleCompraController();
+    private final ImportacionProductosController importacionProductosController =
+            new ImportacionProductosController();
 
     private final Scanner sc = new Scanner(System.in);
 
@@ -49,6 +52,7 @@ public class ComprasMenu {
             System.out.println("10. Confirmar compra");
             System.out.println("11. Cancelar compra");
             System.out.println("12. Exportar entradas_inventario.json");
+            System.out.println("13. Importar productos.json");
             System.out.println("0. Regresar al menu principal");
             System.out.print("Selecciona una opcion: ");
 
@@ -76,6 +80,7 @@ public class ComprasMenu {
             case 10 -> confirmarCompra();
             case 11 -> cancelarCompra();
             case 12 -> exportarEntradas();
+            case 13 -> importarProductos();
             case 0 -> System.out.println("Regresando al menu principal...");
             default -> System.out.println("Opcion no valida.");
         }
@@ -196,6 +201,15 @@ public class ComprasMenu {
         int idCompra = leerEntero();
         String error = detalleCompraController.exportarEntradasInventario(idCompra);
         System.out.println(error == null ? "entradas_inventario.json generado correctamente." : error);
+    }
+
+    private void importarProductos() {
+        System.out.print("Ruta de productos.json [importaciones/productos.json]: ");
+        String ruta = sc.nextLine().trim();
+        if (ruta.isEmpty()) {
+            ruta = "importaciones/productos.json";
+        }
+        System.out.println(importacionProductosController.importar(ruta));
     }
 
     private int leerEntero() {

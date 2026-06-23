@@ -1,0 +1,14 @@
+[
+  {
+    "idProducto": 1,
+    "nombre": "Mouse inalambrico",
+    "descripcion": "Producto de prueba para el modulo de compras",
+    "precio": 250.0,
+    "stock": 10,
+    "idCategoria": 1,
+    "nombreCategoria": "Perifericos",
+    "idAlmacen": 1,
+    "nombreAlmacen": "Almacen principal",
+    "activo": true
+  }
+]

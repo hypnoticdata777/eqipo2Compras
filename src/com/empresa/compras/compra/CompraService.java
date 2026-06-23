@@ -19,9 +19,6 @@ public class CompraService {
     }
 
     public String registrarCompra(Compra compra) {
-        if (!proveedorService.proveedorExiste(compra.getIdProveedor())) {
-            return "Error: el proveedor indicado no existe.";
-        }
         if (compra.getFecha() == null || compra.getFecha().trim().isEmpty()) {
             return "Error: la fecha es obligatoria.";
         }
@@ -35,6 +32,9 @@ public class CompraService {
         }
         if (compra.getTotal() < 0) {
             return "Error: el total no puede ser negativo.";
+        }
+        if (!proveedorService.proveedorExiste(compra.getIdProveedor())) {
+            return "Error: el proveedor indicado no existe.";
         }
 
         compra.setFecha(compra.getFecha().trim());

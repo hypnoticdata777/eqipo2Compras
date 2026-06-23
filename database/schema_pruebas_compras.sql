@@ -51,6 +51,16 @@ CREATE TABLE IF NOT EXISTS producto (
     activo       BOOLEAN NOT NULL DEFAULT TRUE
 );
 
--- Datos de prueba minimos para poder ejercitar el menu de inmediato
-INSERT INTO producto (nombre, descripcion, precio, stock, activo)
-VALUES ('Mouse inalambrico', 'Producto de prueba', 250.00, 10, TRUE);
+-- Dato idempotente para poder ejecutar el script varias veces sin duplicados.
+INSERT INTO producto
+    (id_producto, nombre, descripcion, precio, stock, id_categoria, id_almacen, activo)
+VALUES
+    (1, 'Mouse inalambrico', 'Producto de prueba', 250.00, 10, 1, 1, TRUE)
+ON DUPLICATE KEY UPDATE
+    nombre = VALUES(nombre),
+    descripcion = VALUES(descripcion),
+    precio = VALUES(precio),
+    stock = VALUES(stock),
+    id_categoria = VALUES(id_categoria),
+    id_almacen = VALUES(id_almacen),
+    activo = VALUES(activo);

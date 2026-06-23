@@ -1,100 +1,167 @@
-# Equipo 2 — Compras y Proveedores
+# Equipo 2 - Compras y proveedores
 
-Modulo completo: Proveedor, Compra, DetalleCompra (Model / Repository / Service / Controller),
-mas el submenu y el exportador de JSON. Compilado y verificado sin errores con `javac` (JDK 21).
+Implementacion independiente de los modulos `proveedor`, `compra` y
+`detallecompra` para el proyecto final Sistema Empresa.
 
-## Como esta organizado
+## Cumplimiento principal
 
-```
+- Arquitectura: Menu -> Controller -> Service -> Repository -> MySQL.
+- Model, Repository, Service y Controller para los tres modulos.
+- Registro, consulta, busqueda, desactivacion y cambios de estado.
+- Subtotal calculado en Service y total actualizado en una transaccion.
+- Productor de `exportaciones/entradas_inventario.json`.
+- Consumidor de `importaciones/productos.json`.
+- Errores de MySQL propagados sin mostrar exitos falsos ni cerrar el menu.
+- Pruebas automaticas de validaciones, parser, importador y exportador JSON.
+
+## Estructura
+
+```text
+.vscode/                  Configuracion para Java en VS Code
+database/                 Esquema local y consultas de verificacion
+exportaciones/            Salida de entradas_inventario.json
+importaciones/            Entrada de productos.json y archivo de ejemplo
+lib/                      MySQL Connector/J y Gson
+scripts/                  Compilar, ejecutar y probar desde CMD
 src/com/empresa/
-├── Conexion.java                  <- SOLO REFERENCIA, lee la nota abajo
-├── compras/
-│   ├── ComprasMenu.java           <- submenu (capa "App/menu")
-│   ├── MainPruebaCompras.java     <- arnes para probar este modulo solo
-│   ├── proveedor/                 <- Model, Repository, Service, Controller
-│   ├── compra/                    <- Model, Repository, Service, Controller
-│   └── detallecompra/             <- Model, Repository, Service, Controller
-└── json/
-    ├── dto/EntradaInventarioDTO.java
-    └── exportador/ExportadorEntradasInventario.java
-
-database/schema_pruebas_compras.sql   <- para probar en tu MySQL local
-exportaciones/                        <- aqui se escribe entradas_inventario.json
+  compras/
+    proveedor/
+    compra/
+    detallecompra/
+    ComprasMenu.java
+    MainPruebaCompras.java
+  json/
+    dto/
+    importador/
+    exportador/
+    util/
+test/                     Pruebas que no requieren MySQL
 ```
 
-## ⚠️ Sobre Conexion.java
+## Requisitos
 
-Si el repo compartido de Live Share ya tiene un `Conexion.java`, **usa ese, no este**.
-Este archivo es solo para que el paquete compile y corra de forma aislada. Si el de tu
-equipo tiene un metodo distinto a `Conexion.getConexion()`, ajusta los imports en los
-3 Repository (`ProveedorRepository`, `CompraRepository`, `DetalleCompraRepository`).
+- JDK 21 o posterior.
+- MySQL 8 o posterior para la prueba integral.
+- Base de datos `sistema_empresa`.
 
-## Como probarlo SOLO (antes de integrar)
+El repositorio incluye:
 
-1. Corre `database/schema_pruebas_compras.sql` en tu MySQL local (crea la BD
-   `sistema_empresa` con las 3 tablas reales + una tabla `producto` de prueba).
-2. Agrega el conector de MySQL (`mysql-connector-j.jar`) a tu classpath/librerias en
-   VS Code o tu IDE.
-3. Corre `MainPruebaCompras.main()`. Te abre el menu de Compras directo, sin pasar
-   por el menu principal del proyecto.
+- `lib/mysql-connector-j.jar`: MySQL Connector/J 9.7.0.
+- `lib/gson.jar`: Gson 2.14.0, incluido para respetar la estructura compartida.
 
-## Como integrarlo al proyecto compartido
+El codigo JSON actual no depende de Gson, por lo que los contratos tambien
+pueden probarse con `javac` y la biblioteca estandar.
 
-Cuando te toque el turno en `App.java`, en el switch del menu principal agrega:
+## Pruebas rapidas sin MySQL
+
+Desde CMD, dentro de la raiz del repositorio:
+
+```cmd
+scripts\probar.cmd
+```
+
+Resultado esperado:
+
+```text
+PRUEBAS_OK: contratos JSON, calculos y validaciones locales.
+```
+
+Estas pruebas verifican:
+
+- validaciones locales antes de consultar MySQL;
+- calculo de subtotal;
+- lectura del contrato `productos.json`;
+- generacion y lectura de `entradas_inventario.json`;
+- fecha de compra y tipo `ENTRADA`.
+
+## Preparar MySQL local
+
+Ejecuta:
+
+```text
+database/schema_pruebas_compras.sql
+```
+
+El script es idempotente: puede ejecutarse varias veces sin duplicar el
+producto de prueba.
+
+La conexion predeterminada es:
+
+```text
+jdbc:mysql://localhost:3306/sistema_empresa
+usuario: root
+password: vacio
+```
+
+Puedes cambiarla sin editar Java:
+
+```cmd
+set DB_URL=jdbc:mysql://localhost:3306/sistema_empresa
+set DB_USER=root
+set DB_PASSWORD=tu_password
+scripts\ejecutar.cmd
+```
+
+Tambien se aceptan propiedades de JVM: `db.url`, `db.user` y `db.password`.
+
+## Ejecutar el submenu
+
+```cmd
+scripts\ejecutar.cmd
+```
+
+Flujo recomendado para la demostracion:
+
+1. Importar `importaciones/productos_ejemplo.json`.
+2. Registrar un proveedor.
+3. Registrar una compra con fecha `YYYY-MM-DD`.
+4. Agregar el producto importado a la compra.
+5. Mostrar detalles y comprobar el total.
+6. Confirmar la compra.
+7. Exportar `exportaciones/entradas_inventario.json`.
+8. Abrir el JSON sin editarlo y entregarlo al Equipo 1.
+9. Ejecutar `database/verificacion_compras.sql`.
+
+## Contratos JSON
+
+### productos.json
+
+Equipo 2 consume los campos exactos:
+
+`idProducto`, `nombre`, `descripcion`, `precio`, `stock`, `idCategoria`,
+`nombreCategoria`, `idAlmacen`, `nombreAlmacen`, `activo`.
+
+El importador valida estructura, tipos, IDs, precio, stock y duplicados. Los
+productos validos se insertan o actualizan dentro de una transaccion.
+
+En la base compartida, las categorias y almacenes referenciados deben existir.
+
+### entradas_inventario.json
+
+Equipo 2 produce:
+
+`idMovimiento`, `idCompra`, `idProducto`, `cantidad`, `costoUnitario`,
+`fecha`, `tipo`.
+
+`tipo` siempre vale `ENTRADA`. `idMovimiento` se entrega como `0` porque el
+Equipo 1 genera el ID real al registrar el movimiento en MySQL.
+
+## Integracion en App.java
+
+Cuando el responsable del menu general integre el modulo:
 
 ```java
+import com.empresa.compras.ComprasMenu;
+
+// Dentro del switch principal:
 case 2 -> new ComprasMenu().mostrarMenu();
 ```
 
-y arriba del archivo: `import com.empresa.compras.ComprasMenu;`
+Debe conservarse el `Conexion.java` oficial del proyecto compartido. Si su
+firma no es `Conexion.getConexion()`, se ajustan solamente las llamadas de los
+Repository.
 
-No se modifico ningun otro archivo del proyecto compartido.
+## Evidencia para la entrega
 
-## Decisiones de diseño (para defender en la explicacion oral)
-
-**1. "Proveedor existente" vs "activo"** — El documento dice literal "Proveedor
-existente" para Compra (no dice "y activo", a diferencia de Envios donde si dice
-explicito "Transportista activo"). Por eso `ProveedorRepository.existe()` solo
-checa que el ID exista, sin importar si esta activo. Mismo criterio para
-"Producto existente" en DetalleCompra.
-
-**2. Validacion de producto sin importar clases del Equipo 1** — `DetalleCompraRepository`
-valida que el producto exista con una consulta SQL directa a la tabla compartida
-`producto`, en vez de importar `Producto`/`ProductoRepository` del Equipo 1. Como
-las 4 equipos comparten la misma base `sistema_empresa`, el Repository puede
-consultar esa tabla sin depender del codigo Java de otro equipo. Esto evita
-errores si el Equipo 1 todavia no termina su parte, y mantiene a Compras 100%
-independiente para poder probarlo solo.
-
-**3. JSON escrito a mano, sin Gson** — `ExportadorEntradasInventario` construye el
-JSON con StringBuilder en vez de usar la libreria Gson. Si el equipo ya tiene
-`lib/gson.jar` agregado al proyecto, se puede cambiar facil por `gson.toJson(lista)`
-sin tocar el DTO ni el contrato.
-
-**4. `idMovimiento` se exporta como 0** — El campo `idMovimiento` del contrato
-`entradas_inventario.json` se manda como 0 porque ese ID lo genera MySQL
-(autoincremento de `movimiento_inventario`) hasta que el Equipo 1 importe el
-archivo e inserte las filas. Compras no inserta en esa tabla, solo exporta.
-
-**5. Exportar solo permite compras CONFIRMADAS** — Una compra PENDIENTE todavia
-puede cambiar (se le siguen agregando productos), y una CANCELADA nunca debio
-generar movimiento de inventario. Por eso el export se bloquea si el estado no
-es CONFIRMADA.
-
-## Algo que falta confirmar con el grupo / profesor
-
-El documento marca a Equipo 2 como **consumidor** de `productos.json` (lo produce
-Equipo 1), pero ningun modulo de Compras tiene listada una funcion explicita de
-"Importar productos.json". En este modulo, la validacion de producto se hace por
-SQL directo a la tabla compartida (ver punto 2 arriba), no por un importador de
-JSON. Si el profesor pide ver un importador formal para que cuente como "consumidor"
-del contrato, es facil agregar un `ImportadorProductos.java` — avisa si lo necesitas.
-
-## Limitacion de esta entrega
-
-Todo el codigo compila limpio (0 errores, 0 warnings, javac 21) pero **no se probo
-contra una MySQL real corriendo**, porque este entorno de desarrollo no tiene
-acceso a un servidor MySQL ni al .jar del conector (sin acceso a Maven Central).
-Antes de la presentacion, corre el script de prueba y ejecuta `MainPruebaCompras`
-contra tu MySQL local, o directo contra la base compartida del profesor, para
-confirmar el comportamiento en tiempo de ejecucion.
+Usa [EVIDENCIAS.md](EVIDENCIAS.md) como lista de capturas y resultados que deben
+guardarse antes de la presentacion.

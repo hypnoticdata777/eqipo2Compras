@@ -1,6 +1,6 @@
 package com.empresa.compras.detallecompra;
 
-import com.empresa.Conexion;
+import com.empresa.compras.infraestructura.ConexionCompras;
 import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
@@ -17,7 +17,7 @@ public class DetalleCompraRepository {
         String sql = "INSERT INTO detalle_compra (id_compra, id_producto, cantidad, costo_unitario, subtotal) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, detalle.getIdCompra());
@@ -50,7 +50,7 @@ public class DetalleCompraRepository {
                 "SELECT COALESCE(SUM(subtotal), 0) FROM detalle_compra WHERE id_compra = ?" +
                 ") WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion()) {
+        try (Connection con = ConexionCompras.obtener()) {
             boolean autoCommitOriginal = con.getAutoCommit();
             con.setAutoCommit(false);
 
@@ -93,7 +93,7 @@ public class DetalleCompraRepository {
         List<DetalleCompra> lista = new ArrayList<>();
         String sql = "SELECT * FROM detalle_compra WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idCompra);
@@ -113,7 +113,7 @@ public class DetalleCompraRepository {
     public double sumarTotalPorCompra(int idCompra) {
         String sql = "SELECT SUM(subtotal) AS total FROM detalle_compra WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idCompra);
@@ -142,7 +142,7 @@ public class DetalleCompraRepository {
     public boolean existeProducto(int idProducto) {
         String sql = "SELECT 1 FROM producto WHERE id_producto = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idProducto);
