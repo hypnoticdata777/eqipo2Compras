@@ -1,6 +1,6 @@
 package com.empresa.compras.proveedor;
 
-import com.empresa.Conexion;
+import com.empresa.compras.infraestructura.ConexionCompras;
 import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
@@ -21,7 +21,7 @@ public class ProveedorRepository {
         String sql = "INSERT INTO proveedor (nombre, rfc, telefono, correo, direccion, activo) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setString(1, proveedor.getNombre());
@@ -48,7 +48,7 @@ public class ProveedorRepository {
         List<Proveedor> lista = new ArrayList<>();
         String sql = "SELECT * FROM proveedor";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -64,7 +64,7 @@ public class ProveedorRepository {
     public Proveedor buscarPorId(int idProveedor) {
         String sql = "SELECT * FROM proveedor WHERE id_proveedor = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idProveedor);
@@ -84,7 +84,7 @@ public class ProveedorRepository {
         String sql = "UPDATE proveedor SET nombre=?, rfc=?, telefono=?, correo=?, direccion=? " +
                 "WHERE id_proveedor=?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, proveedor.getNombre());
@@ -103,7 +103,7 @@ public class ProveedorRepository {
     public void desactivar(int idProveedor) {
         String sql = "UPDATE proveedor SET activo = false WHERE id_proveedor = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idProveedor);
@@ -116,7 +116,7 @@ public class ProveedorRepository {
     public boolean existeRfc(String rfc) {
         String sql = "SELECT 1 FROM proveedor WHERE rfc = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, rfc);
@@ -138,7 +138,7 @@ public class ProveedorRepository {
     public boolean existe(int idProveedor) {
         String sql = "SELECT 1 FROM proveedor WHERE id_proveedor = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idProveedor);

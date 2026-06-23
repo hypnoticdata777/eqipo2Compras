@@ -1,6 +1,6 @@
 package com.empresa.compras.detallecompra;
 
-import com.empresa.Conexion;
+import com.empresa.compras.infraestructura.ConexionCompras;
 import com.empresa.json.dto.ProductoDTO;
 import com.empresa.persistencia.PersistenciaException;
 
@@ -22,7 +22,7 @@ public class ProductoCatalogoRepository {
                 "precio=VALUES(precio), stock=VALUES(stock), id_categoria=VALUES(id_categoria), " +
                 "id_almacen=VALUES(id_almacen), activo=VALUES(activo)";
 
-        try (Connection con = Conexion.getConexion()) {
+        try (Connection con = ConexionCompras.obtener()) {
             boolean autoCommitOriginal = con.getAutoCommit();
             con.setAutoCommit(false);
             try (PreparedStatement ps = con.prepareStatement(sql)) {

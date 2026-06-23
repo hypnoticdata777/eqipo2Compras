@@ -1,6 +1,6 @@
 package com.empresa.compras.compra;
 
-import com.empresa.Conexion;
+import com.empresa.compras.infraestructura.ConexionCompras;
 import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
@@ -16,7 +16,7 @@ public class CompraRepository {
     public Compra guardar(Compra compra) {
         String sql = "INSERT INTO compra (id_proveedor, fecha, total, estado) VALUES (?, ?, ?, ?)";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             ps.setInt(1, compra.getIdProveedor());
@@ -41,7 +41,7 @@ public class CompraRepository {
         List<Compra> lista = new ArrayList<>();
         String sql = "SELECT * FROM compra";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -57,7 +57,7 @@ public class CompraRepository {
     public Compra buscarPorId(int idCompra) {
         String sql = "SELECT * FROM compra WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, idCompra);
@@ -76,7 +76,7 @@ public class CompraRepository {
     public void actualizarEstado(int idCompra, String nuevoEstado) {
         String sql = "UPDATE compra SET estado = ? WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, nuevoEstado);
@@ -91,7 +91,7 @@ public class CompraRepository {
     public void actualizarTotal(int idCompra, double nuevoTotal) {
         String sql = "UPDATE compra SET total = ? WHERE id_compra = ?";
 
-        try (Connection con = Conexion.getConexion();
+        try (Connection con = ConexionCompras.obtener();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setDouble(1, nuevoTotal);
