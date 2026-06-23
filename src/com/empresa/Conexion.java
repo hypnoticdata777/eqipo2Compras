@@ -1,5 +1,7 @@
 package com.empresa;
 
+import com.empresa.persistencia.PersistenciaException;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -19,16 +21,32 @@ import java.sql.SQLException;
  */
 public class Conexion {
 
-    private static final String URL = "jdbc:mysql://localhost:3306/sistema_empresa";
-    private static final String USUARIO = "root";
-    private static final String PASSWORD = "";
+    private static final String URL_PREDETERMINADA = "jdbc:mysql://localhost:3306/sistema_empresa";
+    private static final String USUARIO_PREDETERMINADO = "root";
+    private static final String PASSWORD_PREDETERMINADO = "";
 
     public static Connection getConexion() {
+        String url = obtenerConfiguracion("DB_URL", "db.url", URL_PREDETERMINADA);
+        String usuario = obtenerConfiguracion("DB_USER", "db.user", USUARIO_PREDETERMINADO);
+        String password = obtenerConfiguracion("DB_PASSWORD", "db.password", PASSWORD_PREDETERMINADO);
+
         try {
-            return DriverManager.getConnection(URL, USUARIO, PASSWORD);
+            return DriverManager.getConnection(url, usuario, password);
         } catch (SQLException e) {
-            System.out.println("Error al conectar con MySQL: " + e.getMessage());
-            return null;
+            throw new PersistenciaException(
+                    "No fue posible conectar con MySQL. Verifica el conector, el servidor y las credenciales.",
+                    e
+            );
         }
+    }
+
+    private static String obtenerConfiguracion(String variableEntorno, String propiedad, String predeterminado) {
+        String valorPropiedad = System.getProperty(propiedad);
+        if (valorPropiedad != null && !valorPropiedad.isBlank()) {
+            return valorPropiedad;
+        }
+
+        String valorEntorno = System.getenv(variableEntorno);
+        return valorEntorno == null || valorEntorno.isBlank() ? predeterminado : valorEntorno;
     }
 }

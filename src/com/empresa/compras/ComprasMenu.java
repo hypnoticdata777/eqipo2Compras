@@ -6,6 +6,7 @@ import com.empresa.compras.detallecompra.DetalleCompra;
 import com.empresa.compras.detallecompra.DetalleCompraController;
 import com.empresa.compras.proveedor.Proveedor;
 import com.empresa.compras.proveedor.ProveedorController;
+import com.empresa.persistencia.PersistenciaException;
 
 import java.util.List;
 import java.util.Scanner;
@@ -52,47 +53,30 @@ public class ComprasMenu {
 
             opcion = leerEntero();
 
-            switch (opcion) {
-                case 1:
-                    registrarProveedor();
-                    break;
-                case 2:
-                    mostrarProveedores();
-                    break;
-                case 3:
-                    buscarProveedor();
-                    break;
-                case 4:
-                    desactivarProveedor();
-                    break;
-                case 5:
-                    registrarCompra();
-                    break;
-                case 6:
-                    mostrarCompras();
-                    break;
-                case 7:
-                    agregarProductoACompra();
-                    break;
-                case 8:
-                    mostrarDetallesCompra();
-                    break;
-                case 9:
-                    confirmarCompra();
-                    break;
-                case 10:
-                    cancelarCompra();
-                    break;
-                case 11:
-                    exportarEntradas();
-                    break;
-                case 0:
-                    System.out.println("Regresando al menu principal...");
-                    break;
-                default:
-                    System.out.println("Opcion no valida.");
+            try {
+                ejecutarOpcion(opcion);
+            } catch (PersistenciaException e) {
+                System.out.println("Error de base de datos: " + e.getMessage());
             }
         } while (opcion != 0);
+    }
+
+    private void ejecutarOpcion(int opcion) {
+        switch (opcion) {
+            case 1 -> registrarProveedor();
+            case 2 -> mostrarProveedores();
+            case 3 -> buscarProveedor();
+            case 4 -> desactivarProveedor();
+            case 5 -> registrarCompra();
+            case 6 -> mostrarCompras();
+            case 7 -> agregarProductoACompra();
+            case 8 -> mostrarDetallesCompra();
+            case 9 -> confirmarCompra();
+            case 10 -> cancelarCompra();
+            case 11 -> exportarEntradas();
+            case 0 -> System.out.println("Regresando al menu principal...");
+            default -> System.out.println("Opcion no valida.");
+        }
     }
 
     private void registrarProveedor() {

@@ -1,6 +1,7 @@
 package com.empresa.compras.detallecompra;
 
 import com.empresa.Conexion;
+import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,7 +34,7 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al guardar detalle de compra: " + e.getMessage());
+            throw error("guardar el detalle de compra", e);
         }
         return detalle;
     }
@@ -53,7 +54,7 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener detalles de compra: " + e.getMessage());
+            throw error("consultar los detalles de compra", e);
         }
         return lista;
     }
@@ -73,7 +74,7 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al sumar total de compra: " + e.getMessage());
+            throw error("calcular el total de la compra", e);
         }
         return 0.0;
     }
@@ -100,9 +101,8 @@ public class DetalleCompraRepository {
                 return rs.next();
             }
         } catch (SQLException e) {
-            System.out.println("Error al validar producto: " + e.getMessage());
+            throw error("validar la existencia del producto", e);
         }
-        return false;
     }
 
     private DetalleCompra mapearDetalle(ResultSet rs) throws SQLException {
@@ -114,5 +114,9 @@ public class DetalleCompraRepository {
                 rs.getDouble("costo_unitario"),
                 rs.getDouble("subtotal")
         );
+    }
+
+    private PersistenciaException error(String operacion, SQLException causa) {
+        return new PersistenciaException("No se pudo " + operacion + ".", causa);
     }
 }

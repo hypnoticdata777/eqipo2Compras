@@ -1,6 +1,7 @@
 package com.empresa.compras.compra;
 
 import com.empresa.Conexion;
+import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +32,7 @@ public class CompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al guardar compra: " + e.getMessage());
+            throw error("guardar la compra", e);
         }
         return compra;
     }
@@ -48,7 +49,7 @@ public class CompraRepository {
                 lista.add(mapearCompra(rs));
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener compras: " + e.getMessage());
+            throw error("consultar las compras", e);
         }
         return lista;
     }
@@ -67,7 +68,7 @@ public class CompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al buscar compra: " + e.getMessage());
+            throw error("buscar la compra", e);
         }
         return null;
     }
@@ -82,7 +83,7 @@ public class CompraRepository {
             ps.setInt(2, idCompra);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Error al actualizar estado de compra: " + e.getMessage());
+            throw error("actualizar el estado de la compra", e);
         }
     }
 
@@ -97,7 +98,7 @@ public class CompraRepository {
             ps.setInt(2, idCompra);
             ps.executeUpdate();
         } catch (SQLException e) {
-            System.out.println("Error al actualizar total de compra: " + e.getMessage());
+            throw error("actualizar el total de la compra", e);
         }
     }
 
@@ -109,5 +110,9 @@ public class CompraRepository {
                 rs.getDouble("total"),
                 rs.getString("estado")
         );
+    }
+
+    private PersistenciaException error(String operacion, SQLException causa) {
+        return new PersistenciaException("No se pudo " + operacion + ".", causa);
     }
 }
