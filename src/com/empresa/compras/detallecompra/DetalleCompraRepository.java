@@ -39,6 +39,56 @@ public class DetalleCompraRepository {
         return detalle;
     }
 
+    /**
+     * Guarda el detalle y actualiza el total de la compra dentro de una sola
+     * transaccion. Si una de las dos operaciones falla, ninguna queda aplicada.
+     */
+    public DetalleCompra guardarYRecalcularTotal(DetalleCompra detalle) {
+        String insertarDetalle = "INSERT INTO detalle_compra " +
+                "(id_compra, id_producto, cantidad, costo_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
+        String actualizarTotal = "UPDATE compra SET total = (" +
+                "SELECT COALESCE(SUM(subtotal), 0) FROM detalle_compra WHERE id_compra = ?" +
+                ") WHERE id_compra = ?";
+
+        try (Connection con = Conexion.getConexion()) {
+            boolean autoCommitOriginal = con.getAutoCommit();
+            con.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement ps = con.prepareStatement(insertarDetalle, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, detalle.getIdCompra());
+                    ps.setInt(2, detalle.getIdProducto());
+                    ps.setInt(3, detalle.getCantidad());
+                    ps.setDouble(4, detalle.getCostoUnitario());
+                    ps.setDouble(5, detalle.getSubtotal());
+                    ps.executeUpdate();
+
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            detalle.setIdDetalleCompra(rs.getInt(1));
+                        }
+                    }
+                }
+
+                try (PreparedStatement ps = con.prepareStatement(actualizarTotal)) {
+                    ps.setInt(1, detalle.getIdCompra());
+                    ps.setInt(2, detalle.getIdCompra());
+                    ps.executeUpdate();
+                }
+
+                con.commit();
+                return detalle;
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            } finally {
+                con.setAutoCommit(autoCommitOriginal);
+            }
+        } catch (SQLException e) {
+            throw error("guardar el detalle y recalcular el total de la compra", e);
+        }
+    }
+
     public List<DetalleCompra> obtenerPorCompra(int idCompra) {
         List<DetalleCompra> lista = new ArrayList<>();
         String sql = "SELECT * FROM detalle_compra WHERE id_compra = ?";

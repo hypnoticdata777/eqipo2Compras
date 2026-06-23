@@ -43,11 +43,12 @@ public class ComprasMenu {
             System.out.println("4. Desactivar proveedor");
             System.out.println("5. Registrar compra");
             System.out.println("6. Mostrar compras");
-            System.out.println("7. Agregar producto a una compra");
-            System.out.println("8. Mostrar detalles de una compra");
-            System.out.println("9. Confirmar compra");
-            System.out.println("10. Cancelar compra");
-            System.out.println("11. Exportar entradas_inventario.json");
+            System.out.println("7. Buscar compra");
+            System.out.println("8. Agregar producto a una compra");
+            System.out.println("9. Mostrar detalles de una compra");
+            System.out.println("10. Confirmar compra");
+            System.out.println("11. Cancelar compra");
+            System.out.println("12. Exportar entradas_inventario.json");
             System.out.println("0. Regresar al menu principal");
             System.out.print("Selecciona una opcion: ");
 
@@ -69,11 +70,12 @@ public class ComprasMenu {
             case 4 -> desactivarProveedor();
             case 5 -> registrarCompra();
             case 6 -> mostrarCompras();
-            case 7 -> agregarProductoACompra();
-            case 8 -> mostrarDetallesCompra();
-            case 9 -> confirmarCompra();
-            case 10 -> cancelarCompra();
-            case 11 -> exportarEntradas();
+            case 7 -> buscarCompra();
+            case 8 -> agregarProductoACompra();
+            case 9 -> mostrarDetallesCompra();
+            case 10 -> confirmarCompra();
+            case 11 -> cancelarCompra();
+            case 12 -> exportarEntradas();
             case 0 -> System.out.println("Regresando al menu principal...");
             default -> System.out.println("Opcion no valida.");
         }
@@ -139,6 +141,13 @@ public class ComprasMenu {
         for (Compra c : lista) {
             System.out.println(c);
         }
+    }
+
+    private void buscarCompra() {
+        System.out.print("ID de la compra: ");
+        int idCompra = leerEntero();
+        Compra compra = compraController.buscarCompra(idCompra);
+        System.out.println(compra == null ? "No se encontro una compra con ese ID." : compra);
     }
 
     private void agregarProductoACompra() {

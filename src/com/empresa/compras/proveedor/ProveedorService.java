@@ -20,6 +20,7 @@ public class ProveedorService {
     }
 
     public String registrarProveedor(Proveedor proveedor) {
+        normalizar(proveedor);
         String error = validar(proveedor);
         if (error != null) {
             return error;
@@ -72,5 +73,23 @@ public class ProveedorService {
             return "Error: el correo debe tener un formato valido (debe contener @).";
         }
         return null; // sin errores
+    }
+
+    private void normalizar(Proveedor proveedor) {
+        if (proveedor.getNombre() != null) {
+            proveedor.setNombre(proveedor.getNombre().trim());
+        }
+        if (proveedor.getRfc() != null) {
+            proveedor.setRfc(proveedor.getRfc().trim().toUpperCase());
+        }
+        if (proveedor.getTelefono() != null) {
+            proveedor.setTelefono(proveedor.getTelefono().trim());
+        }
+        if (proveedor.getCorreo() != null) {
+            proveedor.setCorreo(proveedor.getCorreo().trim().toLowerCase());
+        }
+        if (proveedor.getDireccion() != null) {
+            proveedor.setDireccion(proveedor.getDireccion().trim());
+        }
     }
 }

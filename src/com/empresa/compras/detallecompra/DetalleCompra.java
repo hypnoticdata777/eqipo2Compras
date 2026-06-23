@@ -2,8 +2,8 @@ package com.empresa.compras.detallecompra;
 
 /**
  * Modelo (Entidad) que representa la tabla `detalle_compra` en MySQL.
- * El subtotal SIEMPRE lo calcula el sistema (cantidad x costo_unitario),
- * nunca se recibe directamente de un usuario o formulario.
+ * El subtotal llega calculado desde Service (cantidad x costo_unitario);
+ * nunca se recibe directamente del usuario o del menu.
  */
 public class DetalleCompra {
 
@@ -17,13 +17,13 @@ public class DetalleCompra {
     public DetalleCompra() {
     }
 
-    // Constructor para un detalle NUEVO: calcula el subtotal automaticamente
-    public DetalleCompra(int idCompra, int idProducto, int cantidad, double costoUnitario) {
+    // Constructor para un detalle NUEVO. Service entrega el subtotal ya validado y calculado.
+    public DetalleCompra(int idCompra, int idProducto, int cantidad, double costoUnitario, double subtotal) {
         this.idCompra = idCompra;
         this.idProducto = idProducto;
         this.cantidad = cantidad;
         this.costoUnitario = costoUnitario;
-        this.subtotal = cantidad * costoUnitario; // regla del documento: subtotal = cantidad x costo_unitario
+        this.subtotal = subtotal;
     }
 
     // Constructor completo - lo usa el Repository para reconstruir un detalle que vino de MySQL
