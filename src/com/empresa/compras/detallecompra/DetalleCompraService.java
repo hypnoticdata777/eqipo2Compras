@@ -19,6 +19,18 @@ public class DetalleCompraService {
     }
 
     public String agregarProductoACompra(int idCompra, int idProducto, int cantidad, double costoUnitario) {
+        if (cantidad <= 0) {
+            return "Error: la cantidad debe ser mayor que cero.";
+        }
+        if (!Double.isFinite(costoUnitario) || costoUnitario <= 0) {
+            return "Error: el costo unitario debe ser mayor que cero.";
+        }
+
+        double subtotal = cantidad * costoUnitario;
+        if (!Double.isFinite(subtotal)) {
+            return "Error: el subtotal calculado esta fuera del rango permitido.";
+        }
+
         Compra compra = compraService.obtenerCompraValidada(idCompra);
         if (compra == null) {
             return "Error: la compra indicada no existe.";
@@ -29,14 +41,7 @@ public class DetalleCompraService {
         if (!detalleCompraRepository.existeProducto(idProducto)) {
             return "Error: el producto indicado no existe.";
         }
-        if (cantidad <= 0) {
-            return "Error: la cantidad debe ser mayor que cero.";
-        }
-        if (costoUnitario <= 0) {
-            return "Error: el costo unitario debe ser mayor que cero.";
-        }
 
-        double subtotal = cantidad * costoUnitario;
         DetalleCompra detalle = new DetalleCompra(idCompra, idProducto, cantidad, costoUnitario, subtotal);
         detalleCompraRepository.guardarYRecalcularTotal(detalle);
         return null;

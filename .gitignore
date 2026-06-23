@@ -1,0 +1,8 @@
+out/
+out-test/
+*.class
+exportaciones/*.json
+!exportaciones/.gitkeep
+.env
+.DS_Store
+Thumbs.db
