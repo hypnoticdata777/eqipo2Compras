@@ -2,6 +2,8 @@ package com.empresa.compras.compra;
 
 import com.empresa.compras.proveedor.ProveedorService;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class CompraService {
@@ -23,6 +25,11 @@ public class CompraService {
         if (compra.getFecha() == null || compra.getFecha().trim().isEmpty()) {
             return "Error: la fecha es obligatoria.";
         }
+        try {
+            LocalDate.parse(compra.getFecha().trim());
+        } catch (DateTimeParseException e) {
+            return "Error: la fecha debe tener el formato YYYY-MM-DD y ser una fecha valida.";
+        }
         if (!ESTADOS_PERMITIDOS.contains(compra.getEstado())) {
             return "Error: el estado de la compra no es valido.";
         }
@@ -30,6 +37,7 @@ public class CompraService {
             return "Error: el total no puede ser negativo.";
         }
 
+        compra.setFecha(compra.getFecha().trim());
         compraRepository.guardar(compra);
         return null;
     }

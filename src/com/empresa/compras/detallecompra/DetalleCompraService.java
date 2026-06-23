@@ -36,11 +36,9 @@ public class DetalleCompraService {
             return "Error: el costo unitario debe ser mayor que cero.";
         }
 
-        // El subtotal SIEMPRE lo calcula el sistema (constructor de DetalleCompra), nunca se recibe de fuera
-        DetalleCompra detalle = new DetalleCompra(idCompra, idProducto, cantidad, costoUnitario);
-        detalleCompraRepository.guardar(detalle);
-
-        recalcularTotal(idCompra);
+        double subtotal = cantidad * costoUnitario;
+        DetalleCompra detalle = new DetalleCompra(idCompra, idProducto, cantidad, costoUnitario, subtotal);
+        detalleCompraRepository.guardarYRecalcularTotal(detalle);
         return null;
     }
 

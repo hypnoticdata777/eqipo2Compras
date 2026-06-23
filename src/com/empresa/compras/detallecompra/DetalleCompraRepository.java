@@ -1,6 +1,7 @@
 package com.empresa.compras.detallecompra;
 
 import com.empresa.Conexion;
+import com.empresa.persistencia.PersistenciaException;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,9 +34,59 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al guardar detalle de compra: " + e.getMessage());
+            throw error("guardar el detalle de compra", e);
         }
         return detalle;
+    }
+
+    /**
+     * Guarda el detalle y actualiza el total de la compra dentro de una sola
+     * transaccion. Si una de las dos operaciones falla, ninguna queda aplicada.
+     */
+    public DetalleCompra guardarYRecalcularTotal(DetalleCompra detalle) {
+        String insertarDetalle = "INSERT INTO detalle_compra " +
+                "(id_compra, id_producto, cantidad, costo_unitario, subtotal) VALUES (?, ?, ?, ?, ?)";
+        String actualizarTotal = "UPDATE compra SET total = (" +
+                "SELECT COALESCE(SUM(subtotal), 0) FROM detalle_compra WHERE id_compra = ?" +
+                ") WHERE id_compra = ?";
+
+        try (Connection con = Conexion.getConexion()) {
+            boolean autoCommitOriginal = con.getAutoCommit();
+            con.setAutoCommit(false);
+
+            try {
+                try (PreparedStatement ps = con.prepareStatement(insertarDetalle, Statement.RETURN_GENERATED_KEYS)) {
+                    ps.setInt(1, detalle.getIdCompra());
+                    ps.setInt(2, detalle.getIdProducto());
+                    ps.setInt(3, detalle.getCantidad());
+                    ps.setDouble(4, detalle.getCostoUnitario());
+                    ps.setDouble(5, detalle.getSubtotal());
+                    ps.executeUpdate();
+
+                    try (ResultSet rs = ps.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            detalle.setIdDetalleCompra(rs.getInt(1));
+                        }
+                    }
+                }
+
+                try (PreparedStatement ps = con.prepareStatement(actualizarTotal)) {
+                    ps.setInt(1, detalle.getIdCompra());
+                    ps.setInt(2, detalle.getIdCompra());
+                    ps.executeUpdate();
+                }
+
+                con.commit();
+                return detalle;
+            } catch (SQLException e) {
+                con.rollback();
+                throw e;
+            } finally {
+                con.setAutoCommit(autoCommitOriginal);
+            }
+        } catch (SQLException e) {
+            throw error("guardar el detalle y recalcular el total de la compra", e);
+        }
     }
 
     public List<DetalleCompra> obtenerPorCompra(int idCompra) {
@@ -53,7 +104,7 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al obtener detalles de compra: " + e.getMessage());
+            throw error("consultar los detalles de compra", e);
         }
         return lista;
     }
@@ -73,7 +124,7 @@ public class DetalleCompraRepository {
                 }
             }
         } catch (SQLException e) {
-            System.out.println("Error al sumar total de compra: " + e.getMessage());
+            throw error("calcular el total de la compra", e);
         }
         return 0.0;
     }
@@ -100,9 +151,8 @@ public class DetalleCompraRepository {
                 return rs.next();
             }
         } catch (SQLException e) {
-            System.out.println("Error al validar producto: " + e.getMessage());
+            throw error("validar la existencia del producto", e);
         }
-        return false;
     }
 
     private DetalleCompra mapearDetalle(ResultSet rs) throws SQLException {
@@ -114,5 +164,9 @@ public class DetalleCompraRepository {
                 rs.getDouble("costo_unitario"),
                 rs.getDouble("subtotal")
         );
+    }
+
+    private PersistenciaException error(String operacion, SQLException causa) {
+        return new PersistenciaException("No se pudo " + operacion + ".", causa);
     }
 }
